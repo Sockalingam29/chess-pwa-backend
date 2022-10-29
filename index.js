@@ -9,30 +9,31 @@ app.use(cors())
 
 const io = new Server(server,{
     cors: {
-        origin: "http://localhost:3000",
+        origin: "https://clever-genie-dcae66.netlify.app/",
         methods: ["GET", "POST"]
     }
 });
 
 app.get('/', (req, res) => {
-  res.send("Hello world!");
+  res.send("Chess backend is here!");
 });
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
-  socket.on("join_room", (data) => {
+  await socket.on("join_room", async(data) => {
     console.log("Joined room")
-    socket.join(data);
+    await socket.join(data);
   });
 
-  socket.on("send_message", async(data) => {
+  await socket.on("send_message", async(data) => {
     console.log("Data from index js")
     console.log(data)
-    socket.to(data.room).emit("receive_board", data);
+    await socket.to(data.room).emit("receive_board", data);
   });
 });
 
-server.listen(3001, () => {
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
   console.log('listening on *:3001');
 });
