@@ -9,7 +9,7 @@ app.use(cors())
 
 const io = new Server(server,{
     cors: {
-        origin: "https://clever-genie-dcae66.netlify.app/",
+        origin: "https://clever-genie-dcae66.netlify.app",
         methods: ["GET", "POST"]
     }
 });
