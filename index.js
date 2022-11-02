@@ -1,55 +1,54 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const http = require('http');
+const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-const cors = require("cors")
+const cors = require("cors");
 
-app.use(cors())
+app.use(cors());
 
-const io = new Server(server,{
-    cors: {
-        origin: "*",
-    }
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
 });
 
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.send("Chess backend is here!");
 });
-
-let player=[];
 
 io.on("connection", async (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
-  await socket.on("join_room", async(room) => {
+  await socket.on("join_room", async (room) => {
     await socket.join(room);
-    let numClients = player.length;
-    console.log("Num of clients"+numClients)
-    if(numClients === 0){
-      await socket.join(room);
-      player[0]=socket.id;
-      console.log(socket.id +" Player 1 joined")
-      await socket.emit("player", {player:"white"});
+    let roomProperties = io._nsps.get("/").adapter.rooms.get(room);
+    let numClients = roomProperties ? roomProperties.size : 0;
+    console.log("Num of clients in room " + room + " = " + numClients);
+    if (numClients === 1) {
+      // await socket.join(room);
+      console.log(socket.id + " Player 1 joined");
+      await socket.emit("player", { player: "white" });
+    } else if (numClients === 2) {
+      // await socket.join(room);
+      console.log(socket.id + " Player 2 joined");
+      await socket.emit("player", { player: "black" });
     }
-    else if(numClients === 1){
-      await socket.join(room);
-      player[1]=socket.id;
-      console.log(socket.id +" Player 2 joined")
-      await socket.emit("player", {player:"black"});
-    }else{
-      await socket.emit("room_full", {room:room});
-    }
+    // else {
+    //   await socket.emit("room_full");
+    //   console.log("Room full");
+    // }
   });
 
-  await socket.on("send_message", async(data) => {
+  await socket.on("send_message", async (data) => {
+    console.log("Room in send_message is " + data.room);
     await socket.to(data.room).emit("receive_board", data);
-    socket.on("disconnect", () => {
+  });
+  socket.on("disconnect", () => {
     console.log("User Disconnected", socket.id);
   });
 });
-})
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log('listening on *:3001');
-})
+  console.log("listening on Port " + PORT);
+});
