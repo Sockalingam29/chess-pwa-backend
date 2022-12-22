@@ -26,18 +26,16 @@ io.on("connection", async (socket) => {
     let numClients = roomProperties ? roomProperties.size : 0;
     console.log("Num of clients in room " + room + " = " + numClients);
     if (numClients === 1) {
-      // await socket.join(room);
       console.log(socket.id + " Player 1 joined");
       await socket.emit("player", { player: "white" });
     } else if (numClients === 2) {
-      // await socket.join(room);
       console.log(socket.id + " Player 2 joined");
       await socket.emit("player", { player: "black" });
     }
-    // else {
-    //   await socket.emit("room_full");
-    //   console.log("Room full");
-    // }
+    else {
+      await socket.emit("room_full");
+      console.log("Room full");
+    }
   });
 
   await socket.on("send_message", async (data) => {
